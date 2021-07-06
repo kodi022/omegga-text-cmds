@@ -32,7 +32,7 @@ class kTextCommandCreator {
                     if (announce == "true") {
                         announce = true;
                         cmdname = cmdname.toLowerCase();
-                        sanitize(cmdname);
+                        cmdname = sanitize(cmdname);
                         newcmd = {cmdname, announce, string};
                         cmds.push(newcmd);
                         this.omegga.broadcast(`<color="99ff66">Broadcast command created named <color="ffffff">!${cmdname}</></>`);
@@ -40,7 +40,7 @@ class kTextCommandCreator {
                     } else if (announce == "false") {
                         announce = false;
                         cmdname = cmdname.toLowerCase();
-                        sanitize(cmdname);
+                        cmdname = sanitize(cmdname);
                         newcmd = {cmdname, announce, string};
                         cmds.push(newcmd);
                         this.omegga.broadcast(`<color="99ff66">Whisper command created named <color="ffffff">!${cmdname}</></>`);
