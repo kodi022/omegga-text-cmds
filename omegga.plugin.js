@@ -1,4 +1,4 @@
-//const fs = require("fs");
+const { chat: { sanitize } } = OMEGGA_UTIL;
 
 class kTextCommandCreator {
 
@@ -7,7 +7,6 @@ class kTextCommandCreator {
     this.config = config;
     this.store = store;
     }
-    // todo:
     // <b>bold</> <i>italic</> <color="hex">color</> <link="url">link</> <code>code text</>
     async init() {
         let cmds = [];
@@ -32,12 +31,16 @@ class kTextCommandCreator {
 
                     if (announce == "true") {
                         announce = true;
+                        cmdname = cmdname.toLowerCase();
+                        sanitize(cmdname);
                         newcmd = {cmdname, announce, string};
                         cmds.push(newcmd);
                         this.omegga.broadcast(`<color="99ff66">Broadcast command created named <color="ffffff">!${cmdname}</></>`);
                         await this.store.set('commands', cmds);
                     } else if (announce == "false") {
                         announce = false;
+                        cmdname = cmdname.toLowerCase();
+                        sanitize(cmdname);
                         newcmd = {cmdname, announce, string};
                         cmds.push(newcmd);
                         this.omegga.broadcast(`<color="99ff66">Whisper command created named <color="ffffff">!${cmdname}</></>`);
