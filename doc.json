@@ -1,47 +1,33 @@
 {
-    "name": "K-CommandCreator",
-    "description": "Originally just a bunch of silly commands, turned into a easy text command creator.",
-    "author": "Kodi",
-    "config": {
-	"authorized-users": {
-	"description": "People who can create and remove commands.",
-	"type": "players",
-	"default": []
-	}
-    },
-    "commands": [
-	  {
-      "name": "!createcmd",
-      "description": "Make a command. Auth required.",
-        "example": "!createcmd burger true Man this <b>burger</> is really good",
-        "args": [{"name": "name", "description": "The commands name", "required": "true"},
-		{"name": "bool", "description": "true/false for broadcasting/whispering the command", "required": "true"},
-		{"name": "string", "description": "String that is what the command prints. Formatting is allowed.", "required": "true"}]
-    },
-	  {
-      "name": "!removecmd",
-      "description": "Remove a command. Auth required.",
-        "example": "!removecmd burger",
-        "args": [{"name": "name", "description": "The commands name", "required": "true"}]
-    },
-    {
-      "name": "!createcmdhelp",
-      "description": "How to make a command, and an example of what you can do.",
-        "example": "!createcmdhelp",
-        "args": []
-    },
-    {
-      "name": "!clearstoreandcommands",
-      "description": "Removes ALL COMMANDS. Only use if necessary. Auth required.",
-        "example": "!clearstoreandcommands confirm",
-        "args": []
-    },
-    {
-      "name": "!viewcmds",
-      "description": "View all commands in-game.",
-        "example": "!viewcmds",
-        "args": []
-    }
-  ]
+  "name": "K-Playtime",
+  "description": "Know how long you've played on a server, and when you first joined",
+  "author": "Kodi",
+  "config": {
+"authorized-users": {
+"description": "People who can create and remove commands.",
+"type": "players",
+"default": []
 }
-
+  },
+  "commands": [
+  {
+    "name": "!playtime",
+    "description": "See your or others total playtime",
+      "example": "!playtime cake",
+      "args": [{"name": "name", "description": "Someone elses name", "required": false}]
+  },
+  {
+    "name": "!firstjoin",
+    "description": "See when you or others first joined the server",
+      "example": "!firstjoin cake",
+      "args": [{"name": "name", "description": "Someone elses name", "required": false}]
+  },
+  {
+    "name": "!plytime:clearstore",
+    "description": "Clears store, which is all saved times. Do not do unless required. Requires Authorization.",
+      "example": "!plytime:clearstore confirm cake",
+      "args": [{"name": "confirm", "description": "Confirm the clearing", "required": true},
+        {"name": "name", "description": "Clear a specific persons store", "required": false}]
+  }
+]
+}
