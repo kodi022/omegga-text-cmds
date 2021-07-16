@@ -8,62 +8,87 @@ class kPlaytime {
     }
 
     async init() {
-        let players = await this.store.get("playertimes") || {};
-        console.log(players)
-
+        // players is just one player but im too lazy to change all references
         this.omegga.on("join", async (player) => {
-            if (players[player.name] != undefined) {
-                console.log("returning player")
+            let players = await this.store.get("playertime:" + player.name) || undefined;
+            if (players != undefined) {
                 let date = Date.now();
-                players[player.name].lastJoin = date;
-                this.omegga.broadcast(`${player.name} last joined <color="ffaa77">${prettyMilliseconds(players[player.name].lastJoin - players[player.name].lastLeave)}</> ago`);
-                console.log(players[player.name]);
-                await this.store.set('playertimes', players);
-            } else {
-                console.log("new player")
+                players.lastJoin = date;
+                this.omegga.broadcast(`<color="aaa"><b><color="5a7">${player.name}</></> last joined <color="c85"><b>${prettyMilliseconds(players.lastJoin - players.lastLeave)}</></> ago</>`);
+                await this.store.set("playertime:" + player.name, players);
+            } else {    
                 let date = Date.now();
                 const plr = ({firstJoin:date, lastJoin:date, lastLeave:0, totaltime:0});
-                players[player.name] = plr;
-                this.omegga.broadcast(`${player.name} added to playtime tracking.`);
-                await this.store.set('playertimes', players);
+                players = plr;
+                this.omegga.broadcast(`<color="aaa"><b><color="5a7">${player.name}</></> added to playtime tracking</>`);
+                await this.store.set("playertime:" + player.name, players);
             }
         });
         this.omegga.on("leave", async (player) => {
-            if (players[player.name] != undefined) {
+            let players = await this.store.get("playertime:" + player.name) || undefined;
+            if (players != undefined) {
                 let date = Date.now();
-                players[player.name].lastLeave = date;
-                let diff = (players[player.name].lastLeave - players[player.name].lastJoin);
-                players[player.name].totaltime += diff;
-                await this.store.set('playertimes', players);
+                players.lastLeave = date;
+                let diff = (players.lastLeave - players.lastJoin);
+                players.totaltime += diff;
+                await this.store.set("playertime:" + player.name, players);
+            } else {          
             }
         });
-        this.omegga.on("chatcmd:test", () => {
-            console.log(players);
-        });
-        this.omegga.on("chatcmd:playtime", (name, othername) => {
+        this.omegga.on("chatcmd:playtime", async (name, othername) => {
+            let players = await this.store.get("playertime:" + name) || undefined;
+            let players2 = await this.store.get("playertime:" + othername) || undefined;
             if(othername != undefined) {
-                if (players[othername] == undefined) {
-                    this.omegga.whisper(name, `No player found named '${othername}'`)
+                if (players2 == undefined) {
+                    this.omegga.whisper(name, `<color="aaa">No player found named '<b><color="5a7">${othername}</></>'</>`)
                 } else {
-                    let date = Date.now() - players[othername].lastJoin;
-                    this.omegga.whisper(name, `${othername} has played on this server for <color="ffaa77">${prettyMilliseconds(players[othername].totaltime + date)}</>`)
+                    let date = Date.now() - players2.lastJoin;
+                    this.omegga.whisper(name, `<color="5a7"><b>${othername}</></><color="aaa"> has played on this server for <color="c85"><b>${prettyMilliseconds(players2.totaltime + date)}</></></>`)
                 }
             } else {
-                let date = Date.now() - players[name].lastJoin;
-                this.omegga.whisper(name, `You have played on this server for <color="ffaa77">${prettyMilliseconds(players[name].totaltime + date)}</>`)
+                let date = Date.now() - players.lastJoin;
+                this.omegga.whisper(name, `<color="aaa">You have played on this server for <color="c85"><b>${prettyMilliseconds(players.totaltime + date)}</></></>`)
             }
         });
-        this.omegga.on ('chatcmd:plytime:clearstore', async (name, confirm) => {
+        this.omegga.on("chatcmd:firstjoin", async (name, othername) => {
+            let players = await this.store.get("playertime:" + name) || undefined;
+            let players2 = await this.store.get("playertime:" + othername) || undefined;
+            if(othername != undefined) {
+                if (players2 == undefined) {
+                    this.omegga.whisper(name, `<color="aaa">No player found named '<b><color="5a7">${othername}</></>'</>`)
+                } else {
+                    let date = Date.now() - players2.firstJoin;
+                    let date2 = new Date(players2.firstJoin);
+                    this.omegga.whisper(name, `<b><color="5a7">${othername}</></><color="aaa"> first joined <color="c85"><b>${prettyMilliseconds(date)}</></> ago, or on <color="c85"><b>${date2}</></></>`);
+                }
+            } else {
+                let date = Date.now() - players.firstJoin;
+                let date2 = new Date(players.firstJoin);
+                this.omegga.whisper(name, `<color="aaa">You first joined <color="c85"><b>${prettyMilliseconds(date)}</></> ago, or on <color="c85"><b>${date2}</></></>`);
+            }
+        });
+        this.omegga.on ('chatcmd:plytime:clearstore', async (name, confirm, othername) => {
             if (this.config['authorized-users'].find(c => c.name == name)) {
                 if (confirm == "confirm"){
-                    await this.store.wipe;
-                    players = {};
-                    this.omegga.whisper(name, 'Playertimes cleared.');
+                    if (othername != undefined){
+                        await this.store.delete("playertime:" + othername);
+                        this.omegga.whisper(name, `<color="f33">${othername}'s Playertime cleared.</>`);
+                    } else {
+                        for (const key of await this.store.keys()) await this.store.delete(key);
+                        this.omegga.whisper(name, '<color="f33">Playertimes cleared.</>');
+                    }
                 } else {
-                    this.omegga.whisper(name, "Type '!plytime:clearstore confirm' to confirm this action.");
+                    this.omegga.whisper(name, `<color="aaa">Type <b><color="f99">'!plytime:clearstore confirm'</></> to confirm this action.</>`);
                 };
             } else {
-                this.omegga.whisper(name, '<color="ff9999">You are not authorized.</>');
+                this.omegga.whisper(name, '<color="f99">You are not authorized.</>');
+            }
+        }); 
+        this.omegga.on("chatcmd:plytime:test", async (name, othername) => {
+            if (othername != undefined) {
+                console.log(await this.store.get("playertime:" + othername));
+            } else {
+                console.log(await this.store.get("playertime:" + name));
             }
         }); 
     }
