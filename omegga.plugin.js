@@ -75,7 +75,7 @@ class kTextCommandCreator {
             this.omegga.whisper(name, '<b><color="ff6fff">Example:</></> !createcmd Burger true This is a <code>broadcast</> <link="https://google.com">command</> named <i>burger!</>');
         });
 
-        this.omegga.on ('chatcmd:clearstoreandcommands', async (name, confirm) => {
+        this.omegga.on ('chatcmd:txtcmd:clearstoreandcommands', async (name, confirm) => {
             if (this.config['authorized-users'].find(c => c.name == name)) {
                 if (confirm == "confirm"){
                     await this.store.wipe;
