@@ -10,32 +10,28 @@ class kTextCommandCreator {
     // <b>bold</> <i>italic</> <color="hex">color</> <link="url">link</> <code>code text</>
     async init() {
         let cmds = [];
-        cmds = await this.store.get('commands');
+        cmds = await this.store.get('commands') || [];
         
         this.omegga.on ('chatcmd:createcmd', async (name, cmdname, announce, ...string) => {
             if (this.config['authorized-users'].find(c => c.name == name)) {
 
                 let newcmd = {};
-
+                
                 if (cmds.find(c => c.cmdname == cmdname) != undefined) {
                     this.omegga.broadcast('<color="ff9999">Command name already used.</>');
-
 
                 } else {
                     // make commas not delete
                     var newstring = [];
-
 
                     for(const piece of string) {
                         let words = piece.replace(/,/g,"\u2485");
                         newstring.push(words);
                     };
 
-
                     let newerstring = newstring.toString().replace(/,/g," ");
                     let neweststring = newerstring.replace(/\u2485/g,",");
                     string = neweststring;
-
 
                     if (announce == "true") {
                         announce = true;
@@ -132,16 +128,18 @@ class kTextCommandCreator {
 
         this.omegga.on('chat', (name, message)=> {
             if (message.startsWith(`!`)) {
-                for (const comand of cmds) {
-                    if (message == `!${comand.cmdname}`) {
-                        if (cmds.announce == true) {
-                            this.omegga.broadcast(comand.string);
-                        } else {
-                            this.omegga.whisper(name, comand.string);
+                if (cmds != null) {
+                    for (const command of cmds) {
+                        if (message == `!${command.cmdname}`) {
+                            if (cmds.announce == true) {
+                                this.omegga.broadcast(command.string);
+                            } else {
+                                this.omegga.whisper(name, command.string);
+                            }
+                            break;
                         }
-                    return;
-                    }
-                } 
+                    } 
+                }
             }
         }); 
         
