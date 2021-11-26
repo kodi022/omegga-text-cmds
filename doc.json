@@ -1,22 +1,28 @@
 {
-    "name": "K-CommandCreator",
-    "description": "Originally just a bunch of silly commands, turned into a easy text command creator.",
-    "author": "Kodi",
-    "config": {
-	"authorized-users": {
-	"description": "People who can create and remove commands.",
-	"type": "players",
-	"default": []
-	}
-    },
-    "commands": [
+  "name": "K-CommandCreator",
+  "description": "Originally just a bunch of silly commands, turned into a easy text command creator.",
+  "author": "Kodi",
+  "config": {
+	  "authorized-users": {
+	    "description": "People who can create and remove commands.",
+      "default": [],
+	    "type": "players"
+	  }, 
+    "saving-type": {
+      "description": "Choose between Individual files or Omegga-store to save commands. (NOT FUNCTIONAL)",
+      "type": "enum",
+      "options": ["omegga-store", "file"],
+      "default": "omegga-store"
+    }
+  },
+  "commands": [
 	  {
       "name": "!createcmd",
       "description": "Make a command. Auth required.",
         "example": "!createcmd burger true Man this <b>burger</> is really good",
         "args": [{"name": "name", "description": "The commands name", "required": "true"},
-		{"name": "bool", "description": "true/false for broadcasting/whispering the command", "required": "true"},
-		{"name": "string", "description": "String that is what the command prints. Formatting is allowed.", "required": "true"}]
+		    {"name": "bool", "description": "true/false for broadcasting/whispering the command", "required": "true"},
+		    {"name": "string", "description": "String that is what the command prints. Formatting is allowed.", "required": "true"}]
     },
 	  {
       "name": "!removecmd",

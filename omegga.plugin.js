@@ -1,3 +1,4 @@
+const fs = require("fs"); // to be used in future for file saving
 const { chat: { sanitize } } = OMEGGA_UTIL;
 
 class kTextCommandCreator {
@@ -12,43 +13,48 @@ class kTextCommandCreator {
         let cmds = [];
         cmds = await this.store.get('commands') || [];
         
-        this.omegga.on ('chatcmd:createcmd', async (name, cmdname, announce, ...string) => {
+        this.omegga.on ('chatcmd:createcmd', async (name, cmdName, announce, ...string) => {
             if (this.config['authorized-users'].find(c => c.name == name)) {
 
                 let newcmd = {};
                 
-                if (cmds.find(c => c.cmdname == cmdname) != undefined) {
+                if (cmds.find(c => c.cmdName == cmdName) != undefined) {
                     this.omegga.broadcast('<color="ff9999">Command name already used.</>');
 
                 } else {
-                    // make commas not delete
                     var newstring = [];
 
+                    // this is to preserve original commas
                     for(const piece of string) {
                         let words = piece.replace(/,/g,"\u2485");
                         newstring.push(words);
                     };
 
-                    let newerstring = newstring.toString().replace(/,/g," ");
-                    let neweststring = newerstring.replace(/\u2485/g,",");
+                    // take out new commas then switch the old ones back
+                    let noCommaString = newstring.toString().replace(/,/g," ");
+                    let neweststring = noCommaString.replace(/\u2485/g,",");
                     string = neweststring;
 
                     if (announce == "true") {
+
                         announce = true;
-                        cmdname = cmdname.toLowerCase();
-                        cmdname = sanitize(cmdname);
-                        newcmd = {cmdname, announce, string};
+                        cmdName = cmdName.toLowerCase();
+                        cmdName = sanitize(cmdName);
+                        newcmd = {cmdName, announce, string};
                         cmds.push(newcmd);
-                        this.omegga.broadcast(`<color="99ff66">Broadcast command created named <color="ffffff">!${cmdname}</></>`);
+                        this.omegga.broadcast(`<color="99ff66">Broadcast command created named <color="ffffff">!${cmdName}</></>`);
                         await this.store.set('commands', cmds);
+
                     } else if (announce == "false") {
+
                         announce = false;
-                        cmdname = cmdname.toLowerCase();
-                        cmdname = sanitize(cmdname);
-                        newcmd = {cmdname, announce, string};
+                        cmdName = cmdName.toLowerCase();
+                        cmdName = sanitize(cmdName);
+                        newcmd = {cmdName, announce, string};
                         cmds.push(newcmd);
-                        this.omegga.broadcast(`<color="99ff66">Whisper command created named <color="ffffff">!${cmdname}</></>`);
+                        this.omegga.broadcast(`<color="99ff66">Whisper command created named <color="ffffff">!${cmdName}</></>`);
                         await this.store.set('commands', cmds);
+
                     } else {
                         this.omegga.broadcast('<color="ff9999">Only true or false accepted after name.</>');
                     }
@@ -60,14 +66,14 @@ class kTextCommandCreator {
             }
         });
 
-
         this.omegga.on ('chatcmd:removecmd', async (name, cmdnam) => {
 
             if (this.config['authorized-users'].find(c => c.name == name)) {
 
-                if (cmds.find(c => c.cmdname == cmdnam) != undefined) {
-                
-                    const namee = cmds.find(c => c.cmdname == cmdnam);
+                if (cmds.find(c => c.cmdName == cmdnam) != undefined) {
+                    
+                    // finds the index of the searched command in cmds and cuts it out
+                    const namee = cmds.find(c => c.cmdName == cmdnam);
                     let trash = cmds.splice(cmds.indexOf(namee),1);
                     await this.store.set('commands', cmds);
                     this.omegga.whisper(name, `<color="ff9999">Command ${cmdnam} removed.</>`);
@@ -81,19 +87,17 @@ class kTextCommandCreator {
             }
         });
 
-
         this.omegga.on ('chatcmd:createcmdhelp', (name) => {
             this.omegga.whisper(name, '!createcmd <color="99bbff">(name)</> <color="80ffcc">(Broadcast? true or false)</> <color="ffcc99">(commands output)</>');
             this.omegga.whisper(name, '<b><color="ff6fff">Example:</></> !createcmd Burger true This is a <code>broadcast</> <link="https://google.com">command</> named <i>burger!</>');
         });
-
 
         this.omegga.on ('chatcmd:txtcmd:clearstoreandcommands', async (name, confirm) => {
             
             if (this.config['authorized-users'].find(c => c.name == name)) {
                 if (confirm == "confirm"){
 
-                    await this.store.wipe;
+                    await this.store.wipe();
                     cmds = [];
                     this.omegga.whisper(name, 'Commands and command store cleared.');
 
@@ -105,32 +109,27 @@ class kTextCommandCreator {
             }
         }); 
 
-
         this.omegga.on ('chatcmd:viewcmds', (name) => {
             let cmdlist = [];
 
-
             for (const eachcmd of cmds) {
-                cmdlist.push(`| <color="99bbff">${eachcmd.cmdname}</> <color="80ffcc">${eachcmd.announce ? "Broadcast" : "Whisper"}</>`);
+                cmdlist.push(`| <color="99bbff">${eachcmd.cmdName}</> <color="80ffcc">${eachcmd.announce ? "Broadcast" : "Whisper"}</>`);
             };
 
+            let stringlist = cmdlist.join(' ')
 
-            let augbf = cmdlist.toString().replace(/,/g," ");
-
-
-            if (augbf.includes("|")) {
-                this.omegga.broadcast(augbf);
+            if (stringlist.includes("|")) {
+                this.omegga.broadcast(stringlist);
             } else {
                 this.omegga.broadcast('No commands exist.');
             }
         });
 
-
         this.omegga.on('chat', (name, message)=> {
             if (message.startsWith(`!`)) {
                 if (cmds != null) {
                     for (const command of cmds) {
-                        if (message == `!${command.cmdname}`) {
+                        if (message == `!${command.cmdName}`) {
                             if (cmds.announce == true) {
                                 this.omegga.broadcast(command.string);
                             } else {
@@ -138,11 +137,10 @@ class kTextCommandCreator {
                             }
                             break;
                         }
-                    } 
+                    }
                 }
             }
         }); 
-        
     }
   
     async stop() {  
